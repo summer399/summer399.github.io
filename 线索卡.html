@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数字神探—锁定嫌犯</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            letter-spacing: 2px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .card:hover {
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .card h2 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+        
+        .card p {
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+        
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+        
+        /* 线索内容区域 */
+        .clue-content {
+            display: none;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .clue-content h3 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .images-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .image-item {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .image-item:hover {
+            transform: scale(1.03);
+        }
+        
+        .image-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .image-caption {
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        
+        /* 放大图片模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 40px;
+            color: white;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        
+        .close-btn:hover {
+            color: #fdbb2d;
+        }
+        
+        .active {
+            display: block;
+        }
+        
+        .back-btn {
+            display: block;
+            margin: 20px auto 0;
+            padding: 10px 25px;
+            background: #fdbb2d;
+            color: #1a2a6c;
+            border: none;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .back-btn:hover {
+            background: #ffcc44;
+            transform: scale(1.05);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .cards-container {
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>数字神探—锁定嫌犯</h1>
+            <p class="subtitle">收集所有线索，找出真正的罪犯！</p>
+        </header>
+        
+        <div class="cards-container">
+            <div class="card" onclick="showClue(1)">
+                <div class="card-icon">✉️</div>
+                <h2>空空的信封</h2>
+                <p>信封里没有信件，只有一张纸条</p>
+            </div>
+            
+            <div class="card" onclick="showClue(2)">
+                <div class="card-icon">📔</div>
+                <h2>奇怪的日记</h2>
+                <p>发现一本可疑的日记</p>
+            </div>
+            
+            <div class="card" onclick="showClue(3)">
+                <div class="card-icon">👞</div>
+                <h2>陌生的鞋印</h2>
+                <p>现场发现的鞋印</p>
+            </div>
+            
+            <div class="card" onclick="showClue(4)">
+                <div class="card-icon">💳</div>
+                <h2>过去的卡片</h2>
+                <p>疫苗接种记录卡</p>
+            </div>
+            
+            <div class="card" onclick="showClue(5)">
+                <div class="card-icon">👥</div>
+                <h2>路人的证词</h2>
+                <p>目击者提供的信息</p>
+            </div>
+        </div>
+        
+        <!-- 线索内容区域 -->
+        <div id="clue-content-1" class="clue-content">
+            <h3>线索一：空空的信封</h3>
+            <div class="images-container">
+                <div class="image-item" onclick="openModal('images/clue1-1.jpg')">
+                    <img src="images/clue1-1.jpg" alt="省级行政区邮政编码表">
+                    <div class="image-caption">省级行政区邮政编码表</div>
+                </div>
+                <div class="image-item" onclick="openModal('images/clue1-2.jpg')">
+                    <img src="images/clue1-2.jpg" alt="地级市邮政编码表">
+                    <div class="image-caption">地级市邮政编码表</div>
+                </div>
+                <div class="image-item" onclick="openModal('images/clue1-3.jpg')">
+                    <img src="images/clue1-3.jpg" alt="空信封">
+                    <div class="image-caption">空信封</div>
+                </div>
+            </div>
+            <button class="back-btn" onclick="hideClue(1)">返回线索列表</button>
+        </div>
+        
+        <div id="clue-content-2" class="clue-content">
+            <h3>线索二：奇怪的日记</h3>
+            <div class="images-container">
+                <div class="image-item" onclick="openModal('images/clue2.jpg')">
+                    <img src="images/clue2.jpg" alt="日记内容">
+                    <div class="image-caption">日记内容：30岁生日与2025年阅兵同一天</div>
+                </div>
+            </div>
+            <button class="back-btn" onclick="hideClue(2)">返回线索列表</button>
+        </div>
+        
+        <div id="clue-content-3" class="clue-content">
+            <h3>线索三：陌生的鞋印</h3>
+            <div class="images-container">
+                <div class="image-item" onclick="openModal('images/clue3.jpg')">
+                    <img src="images/clue3.jpg" alt="警员勘察记录">
+                    <div class="image-caption">警员勘察记录：鞋印42-45码，锯齿纹</div>
+                </div>
+            </div>
+            <button class="back-btn" onclick="hideClue(3)">返回线索列表</button>
+        </div>
+        
+        <div id="clue-content-4" class="clue-content">
+            <h3>线索四：过去的卡片</h3>
+            <div class="images-container">
+                <div class="image-item" onclick="openModal('images/clue4.jpg')">
+                    <img src="images/clue4.jpg" alt="疫苗接种记录">
+                    <div class="image-caption">疫苗接种记录卡：编号与身份证号一致</div>
+                </div>
+            </div>
+            <button class="back-btn" onclick="hideClue(4)">返回线索列表</button>
+        </div>
+        
+        <div id="clue-content-5" class="clue-content">
+            <h3>线索五：路人的证词</h3>
+            <div class="images-container">
+                <div class="image-item" onclick="openModal('images/clue5.jpg')">
+                    <img src="images/clue5.jpg" alt="路人证词">
+                    <div class="image-caption">路人证词：撞到的人身份证末尾是X</div>
+                </div>
+            </div>
+            <button class="back-btn" onclick="hideClue(5)">返回线索列表</button>
+        </div>
+        
+        <!-- 图片放大模态框 -->
+        <div id="imageModal" class="modal">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <img class="modal-content" id="modalImage" src="" alt="放大图片">
+        </div>
+        
+        <footer>
+            <p>数字神探案件分析系统 &copy; 2023 - 所有线索均为机密信息</p>
+        </footer>
+    </div>
+
+    <script>
+        // 显示线索内容
+        function showClue(clueNumber) {
+            // 隐藏所有线索内容
+            const allClues = document.querySelectorAll('.clue-content');
+            allClues.forEach(clue => {
+                clue.style.display = 'none';
+            });
+            
+            // 显示选中的线索
+            const selectedClue = document.getElementById(`clue-content-${clueNumber}`);
+            if (selectedClue) {
+                selectedClue.style.display = 'block';
+                
+                // 滚动到线索内容区域
+                selectedClue.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+        
+        // 隐藏线索内容
+        function hideClue(clueNumber) {
+            const clue = document.getElementById(`clue-content-${clueNumber}`);
+            if (clue) {
+                clue.style.display = 'none';
+            }
+        }
+        
+        // 打开图片放大模态框
+        function openModal(imageSrc) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            
+            modal.style.display = 'flex';
+            modalImg.src = imageSrc;
+        }
+        
+        // 关闭图片放大模态框
+        function closeModal() {
+            const modal = document.getElementById('imageModal');
+            modal.style.display = 'none';
+        }
+        
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            const modal = document.getElementById('imageModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
